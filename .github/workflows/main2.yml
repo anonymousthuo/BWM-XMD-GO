@@ -1,0 +1,32 @@
+name: BWM-XMD-GO Runner
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Initialize and Install Dependencies
+        run: |
+          # Create go.mod if it doesn't exist
+          if [ ! -f go.mod ]; then
+            go mod init github.com/${{ github.repository }}
+          fi
+          # Install system tools for media
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          # Fetch all required Go libraries
+          go mod tidy
+
+      - name: Run Bot
+        run: go run *.go
