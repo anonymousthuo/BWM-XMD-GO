@@ -16,17 +16,29 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
+          cache: true
 
       - name: Initialize and Install Dependencies
         run: |
-          # Create go.mod if it doesn't exist
+          # Create go.mod if missing to avoid 'no modules' error
           if [ ! -f go.mod ]; then
             go mod init github.com/${{ github.repository }}
           fi
-          # Install system tools for media
+          
+          # Install FFmpeg for media handling (stickers/video)
           sudo apt-get update && sudo apt-get install -y ffmpeg
-          # Fetch all required Go libraries
+          
+          # Tidy up modules to ensure all libraries are downloaded
           go mod tidy
 
       - name: Run Bot
-        run: go run *.go
+        env:
+          SESSION_ID: ${{ secrets.SESSION_ID }}
+        run: |
+          # Use find to locate the main.go file regardless of subfolder
+          MAIN_FILE=$(find . -name "main.go" | head -n 1)
+          if [ -z "$MAIN_FILE" ]; then
+            echo "Error: No main.go found in repository."
+            exit 1
+          fi
+          go run "$MAIN_FILE"
