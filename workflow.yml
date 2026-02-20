@@ -1,4 +1,4 @@
-name: WhatsApp Bot Runner
+name: WhatsApp Bot Runnner
 
 on:
   push:
