@@ -1,16 +1,23 @@
-name: BWM-XMD Bot Runner
+name: BWM-XMD Bot 24/7
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
+  schedule:
+    # This runs the bot every 4 hours (UTC)
+    # It ensures that if the 6hr limit hits, the bot restarts automatically.
+    - cron: '0 */4 * * *'
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  run-bot:
     runs-on: ubuntu-latest
+    # Added a safety timeout slightly under the GitHub max
+    timeout-minutes: 350 
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -20,13 +27,12 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install System Dependencies
+      - name: Install Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg imagemagick
-
-      - name: Install Bot Dependencies
-        run: npm install
+          sudo apt-get update && sudo apt-get install -y ffmpeg imagemagick
+          npm install
 
       - name: Start Bot
+        env:
+          SESSION_ID: ${{ secrets.SESSION_ID }}
         run: node index.js
