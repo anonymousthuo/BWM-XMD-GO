@@ -5,9 +5,12 @@ on:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    # This runs the bot every 4 hours (UTC)
-    # It ensures that if the 6hr limit hits, the bot restarts automatically.
-    - cron: '0 */4 * * *'
+    - cron: '0 */6 * * *' # Changed to 6 hours to match GitHub limits
+
+# This is the "Magic" part that prevents multiple bots from running
+concurrency:
+  group: bwm-xmd-session
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -15,8 +18,7 @@ permissions:
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    # Added a safety timeout slightly under the GitHub max
-    timeout-minutes: 350 
+    timeout-minutes: 355 
     
     steps:
       - name: Checkout Code
